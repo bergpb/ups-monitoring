@@ -70,9 +70,9 @@ def job():
         if GPIO.input(4) == GPIO.HIGH:
             status = 1
             battery_status = "charging"
-            logger.info("Power Adapter Plug In")
+            logger.info("Power Adapter Plugged In")
         if GPIO.input(4) == GPIO.LOW:
-            logger.info("Power Adapter Unplug")
+            logger.info("Power Adapter Unplugged")
 
     logger.info(f"Status: {battery_status}, Battery: {capacity:.0f}%, Voltage: {current_voltage:.2f}V")
 
