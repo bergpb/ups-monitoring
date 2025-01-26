@@ -20,40 +20,40 @@ logger = logging.getLogger("ups.main")
 DRY_RUN = getenv("DRY_RUN", False)
 
 if not DRY_RUN:
-    import RPi.GPIO as GPIO
-
     from ext.ups import UPS
+    import RPi.GPIO as GPIO
 
     ups = UPS()
 
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(4, GPIO.IN)
+
 
 def shutdown():
-    command = "/usr/bin/sudo /sbin/shutdown -h +1"
-    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    send_notification(output)
+    if not DRY_RUN:
+        command = "/usr/bin/sudo /sbin/shutdown -h +1"
+        subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
 
 def send_notification(msg):
-    server = getenv("GOTIFY_SERVER")
-    token = getenv("GOTIFY_TOKEN")
+    if not DRY_RUN:
+        server = getenv("GOTIFY_SERVER")
+        token = getenv("GOTIFY_TOKEN")
 
-    try:
-        requests.post(
-            f"{server}/message?token={token}",
-            json={"message": msg, "priority": 0, "title": "UPS Battery Low"},
-        )
-    except Exception as e:
-        logger.error(f"Failed to send notification: {e}")
+        try:
+            requests.post(
+                f"{server}/message?token={token}",
+                json={"message": msg, "priority": 0, "title": "UPS Battery Low"},
+            )
+        except Exception as e:
+            logger.error(f"Failed to send notification: {e}")
 
 
 def job():
     status = 0
+    battery_status = "discharging"
     if not DRY_RUN:
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(4, GPIO.IN)
-
         current_voltage = ups.read_voltage()
         capacity = ups.read_capacity()
 
@@ -62,36 +62,36 @@ def job():
             current_voltage = ups.read_voltage()
             capacity = ups.read_capacity()
     else:
+        capacity = 10
+        current_voltage = 4
         logger.info(f"Running in dry run mode!!!")
-
-        current_voltage = 3.9
-        capacity = 90
-
-    logger.info(f"Battery: {capacity:.0f}%, {current_voltage:.2f}V")
 
     if not DRY_RUN:
         if GPIO.input(4) == GPIO.HIGH:
             status = 1
+            battery_status = "charging"
             logger.info("Power Adapter Plug In")
         if GPIO.input(4) == GPIO.LOW:
             logger.info("Power Adapter Unplug")
+
+    logger.info(f"Status: {battery_status}, Battery: {capacity:.0f}%, Voltage: {current_voltage:.2f}V")
 
     db.insert(current_voltage, capacity, status)
 
     if capacity <= 25 and capacity > 10:
         msg = f"Low battery ({capacity:.0f}%), please plug the charger!!!"
         send_notification(msg)
-    elif capacity <= 10:
+    elif not status and capacity <= 10:
         logger.critical("D A N G E R !!!")
         logger.critical("BATTERY RUNNING OUT")
         msg = "Danger: The device will turn off soon due energy power!"
         send_notification(msg)
-        logger.critical("Shutting down........")
+        logger.info("Shutting down...")
         shutdown()
 
 
 if not DRY_RUN:
-    schedule.every(1).minutes.do(job)
+    schedule.every(2).minutes.do(job)
 
     while True:
         schedule.run_pending()
