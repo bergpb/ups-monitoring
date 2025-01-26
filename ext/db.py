@@ -15,7 +15,8 @@ class Database:
     def create_table(self):
         try:
             with self.con as con:
-                con.execute(
+                cur = con.cursor()
+                cur.execute(
                     """
                         CREATE TABLE IF NOT EXISTS battery (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,9 +37,10 @@ class Database:
         self.create_table()
         try:
             with self.con as con:
+                cur = con.cursor()
                 datetime = strftime("%Y-%m-%d %H:%M:%S")
 
-                res = con.execute(
+                res = cur.execute(
                     """
                         SELECT voltage, capacity, status
                             FROM battery
@@ -74,7 +76,8 @@ class Database:
     def drop_table(self):
         try:
             with self.con as con:
-                con.execute("""DROP TABLE battery;""")
+                cur = con.cursor()
+                cur.execute("""DROP TABLE battery;""")
                 self.con.commit()
 
         except Exception as error:
