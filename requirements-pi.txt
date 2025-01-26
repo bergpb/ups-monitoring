@@ -1,0 +1,4 @@
+-r requirements.txt
+
+smbus2==0.5.0
+RPi.GPIO==0.7.1
