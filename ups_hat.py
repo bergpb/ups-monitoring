@@ -17,7 +17,7 @@ db = Database("ups")
 
 logger = logging.getLogger("ups.main")
 
-DRY_RUN = getenv("DRY_RUN", True)
+DRY_RUN = getenv("DRY_RUN", False)
 
 if not DRY_RUN:
     import RPi.GPIO as GPIO
