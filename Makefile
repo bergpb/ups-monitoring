@@ -17,3 +17,6 @@ deps-dev: venv
 format-check:
 	$(VENV_PYTHON) -m black . --check --diff
 	$(VENV_PYTHON) -m isort . --check --diff
+
+run-dev: deps-dev
+	$(VENV_PYTHON) ups_hat.py
