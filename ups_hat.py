@@ -48,6 +48,7 @@ def send_notification(msg):
 
 
 def job():
+    status = 0
     if not DRY_RUN:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
@@ -68,7 +69,6 @@ def job():
 
     logger.info(f"Battery: {capacity:.0f}%, {current_voltage:.2f}V")
 
-    status = 1
     if not DRY_RUN:
         if GPIO.input(4) == GPIO.HIGH:
             status = 1
