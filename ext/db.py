@@ -47,7 +47,7 @@ class Database:
                     """
                 ).fetchone()
 
-                if res == None:
+                if res is not None:
                     previous_voltage = res[0]
                     previous_capacity = res[1]
                     previous_status = res[2]
