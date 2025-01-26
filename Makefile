@@ -19,4 +19,4 @@ format-check:
 	$(VENV_PYTHON) -m isort . --check --diff
 
 run-dev: deps-dev
-	$(VENV_PYTHON) ups_hat.py
+	$(VENV_PYTHON) ups-hat.py
