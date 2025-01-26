@@ -47,15 +47,16 @@ class Database:
                     """
                 ).fetchone()
 
-                previous_voltage = res[0]
-                previous_capacity = res[1]
-                previous_status = res[2]
+                if res == None:
+                    previous_voltage = res[0]
+                    previous_capacity = res[1]
+                    previous_status = res[2]
 
-                if (previous_voltage == voltage and
-                    previous_capacity == capacity and
-                    previous_status == status):
-                    logger.info('Previous values are the same, skipping...')
-                    return
+                    if (previous_voltage == voltage and
+                        previous_capacity == capacity and
+                        previous_status == status):
+                        logger.info('Previous values are the same, skipping...')
+                        return
 
                 # https://stackoverflow.com/a/32339569/6539270
                 con.execute(
