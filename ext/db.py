@@ -17,7 +17,7 @@ class Database:
             with self.con as con:
                 con.execute(
                     """
-                        CREATE TABLE IF NOT EXISTS battery_status (
+                        CREATE TABLE IF NOT EXISTS battery (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             voltage REAL NOT NULL,
                             capacity INTEGER NOT NULL,
@@ -37,9 +37,30 @@ class Database:
         try:
             with self.con as con:
                 datetime = strftime("%Y-%m-%d %H:%M:%S")
+
+                res = con.execute(
+                    """
+                        SELECT voltage, capacity, status
+                            FROM battery
+                            ORDER BY ID DESC
+                            LIMIT 1;
+                    """
+                ).fetchone()
+
+                previous_voltage = res[0]
+                previous_capacity = res[1]
+                previous_status = res[2]
+
+                if (previous_voltage == voltage and
+                    previous_capacity == capacity and
+                    previous_status == status):
+                    logger.info('Previous values are the same, skipping...')
+                    return
+
+                # https://stackoverflow.com/a/32339569/6539270
                 con.execute(
                     """
-                        INSERT INTO battery_status (voltage, capacity, status, datetime) VALUES (?, ?, ?, ?);
+                        INSERT INTO battery VALUES (NULL, ?, ?, ?, ?);
                     """,
                     (voltage, capacity, status, datetime),
                 )
@@ -52,7 +73,7 @@ class Database:
     def drop_table(self):
         try:
             with self.con as con:
-                con.execute("""DROP TABLE battery_status;""")
+                con.execute("""DROP TABLE battery;""")
                 self.con.commit()
 
         except Exception as error:
