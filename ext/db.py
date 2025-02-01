@@ -3,7 +3,7 @@ from time import strftime
 
 from ext.log import logging
 
-logger = logging.getLogger("ups.db")
+logger = logging.getLogger(__name__)
 
 
 class Database:

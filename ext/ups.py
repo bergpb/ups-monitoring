@@ -4,7 +4,7 @@ import smbus2
 
 from ext.log import logging
 
-logger = logging.getLogger("ups.module")
+logger = logging.getLogger(__name__)
 
 
 class UPS:
